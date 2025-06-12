@@ -9,7 +9,7 @@ export const isAuthenticated = async () => {
   if (!token) return false;
 
   try {
-    const response = await fetch('https://lms-backend-4b82.onrender.com/api/auth/verify-token', {
+    const response = await fetch('http://localhost:5000/api/auth/verify-token', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`

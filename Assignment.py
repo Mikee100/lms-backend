@@ -1,16 +1,20 @@
 import sys
+import os
 import fitz  # PyMuPDF
 import re
 from transformers import T5ForConditionalGeneration, T5Tokenizer
 import torch
 
 def extract_text_from_pdf(file_path):
-    print(f"[INFO] Extracting text from: {file_path}")
+    if not os.path.exists(file_path):
+        print(f"[ERROR] File does not exist: {file_path}")
+        return None
     doc = fitz.open(file_path)
-    full_text = ""
+    text = ""
     for page in doc:
-        full_text += page.get_text()
-    return full_text
+        text += page.get_text()
+    doc.close()
+    return text
 
 def clean_text(text):
     # Remove extra spaces and normalize line breaks
@@ -78,6 +82,8 @@ if __name__ == "__main__":
 
     pdf_path = sys.argv[1]
     raw_text = extract_text_from_pdf(pdf_path)
+    if raw_text is None:
+        exit(1)
     cleaned_text = clean_text(raw_text)
     device = "cuda" if torch.cuda.is_available() else "cpu"
     final_questions = generate_questions(cleaned_text)
