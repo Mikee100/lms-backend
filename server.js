@@ -21,7 +21,12 @@ const paymentRoutes = require('./routes/paymentRoutes');
 const Assignment = require('./models/Assignment');
 
 const app = express();
-const allowedOrigins = ['http://localhost:5173', 'https://localhost'];
+const allowedOrigins = [
+  'http://localhost:5173',
+  'https://localhost',
+  'https://lms-frontend-sepia-psi.vercel.app', // Add your Vercel frontend
+  'https://lms-backend-4b82.onrender.com' // (optional, if you want to allow backend to call itself)
+];
 
 const corsOptions = {
   origin: function(origin, callback){
@@ -134,4 +139,3 @@ mongoose.connect(process.env.MONGO_URI)
 
 
 
- 

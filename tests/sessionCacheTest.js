@@ -4,7 +4,7 @@ const assert = require('assert');
 async function testSessionPersistence() {
   try {
     // Login request to create session
-    const loginResponse = await axios.post('http://localhost:5000/api/auth/login', {
+    const loginResponse = await axios.post('https://lms-backend-4b82.onrender.com/api/auth/login', {
       username: 'testuser',
       password: 'testpassword'
     }, {
@@ -17,7 +17,7 @@ async function testSessionPersistence() {
     assert(cookies, 'No cookies set on login');
 
     // Use the cookie to make an authenticated request
-    const apiResponse = await axios.get('http://localhost:5000/api/students/profile', {
+    const apiResponse = await axios.get('https://lms-backend-4b82.onrender.com/api/students/profile', {
       headers: {
         Cookie: cookies.join(';')
       },
