@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const bcrypt = require('bcryptjs');6
+const bcrypt = require('bcryptjs');
 const validator = require('validator');
 
 const studentSchema = new mongoose.Schema({
@@ -65,14 +65,35 @@ const studentSchema = new mongoose.Schema({
       message: 'Invalid interest selected'
     }
   },
-  createdAt: {
-    type: Date,
-    default: Date.now
-  },
   active: {
     type: Boolean,
     default: true,
     select: false
+  },
+  bio: {
+    type: String,
+    default: ''
+  },
+  avatar: {
+    type: String,
+    default: ''
+  },
+  socialLinks: {
+    linkedin: String,
+    github: String,
+    twitter: String
+  },
+  contact: {
+    phone: String,
+    address: String
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now
+  },
+  updatedAt: {
+    type: Date,
+    default: Date.now
   }
 });
 
@@ -80,6 +101,12 @@ const studentSchema = new mongoose.Schema({
 studentSchema.pre('save', async function(next) {
   if (!this.isModified('password')) return next();
   this.password = await bcrypt.hash(this.password, 12);
+  next();
+});
+
+// Update updatedAt field before saving
+studentSchema.pre('save', function(next) {
+  this.updatedAt = Date.now();
   next();
 });
 

@@ -9,13 +9,17 @@ router.get('/me', authenticateToken, async (req, res) => {
   try {
     const student = await Student.findOne({ email: req.user.email });
     if (!student) return res.status(404).json({ message: 'Student not found' });
-   let profile = await StudentProfile.findOne({ user: student._id }).populate('user', 'firstName lastName email dateOfBirth studentId interests');
+    // Fetch all student fields (no select, except exclude password)
+    const fullStudent = await Student.findById(student._id).lean();
+    console.log('Full Student:', fullStudent);
+
+    if (fullStudent && fullStudent.password) delete fullStudent.password;
+    let profile = await StudentProfile.findOne({ user: student._id }).lean();
     if (!profile) {
       // Create a blank profile if not exists
-      profile = new StudentProfile({ user: student._id });
-      await profile.save();
+      profile = (await new StudentProfile({ user: student._id }).save()).toObject();
     }
-    res.json(profile);
+    res.json({ ...profile, user: fullStudent });
   } catch (err) {
     res.status(500).json({ message: 'Server error' });
   }
@@ -27,17 +31,17 @@ router.put('/me', authenticateToken, async (req, res) => {
     const student = await Student.findOne({ email: req.user.email });
     if (!student) return res.status(404).json({ message: 'Student not found' });
     const update = req.body;
-    const profile = await StudentProfile.findOneAndUpdate(
-      { user: student._id },
-      { $set: update, updatedAt: new Date() },
-      { new: true, upsert: true }
+    update.updatedAt = new Date();
+    const updatedStudent = await Student.findByIdAndUpdate(
+      student._id,
+      { $set: update },
+      { new: true }
     );
-    res.json(profile);
+    res.json(updatedStudent);
   } catch (err) {
     res.status(500).json({ message: 'Server error' });
   }
 });
-
 // Get a student's profile by student ID (for tutors/admins)
 router.get('/:studentId', authenticateToken, async (req, res) => {
   try {
