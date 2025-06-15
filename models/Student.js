@@ -24,13 +24,13 @@ const studentSchema = new mongoose.Schema({
   },
   password: {
     type: String,
-    required: [true, 'Password is required'],
+    required: [false, 'Password is required'],
     minlength: [8, 'Password must be at least 8 characters'],
     select: false
   },
   dateOfBirth: {
     type: Date,
-    required: [true, 'Date of birth is required'],
+    required: [false, 'Date of birth is required'],
     validate: {
       validator: function(value) {
         // Student must be at least 13 years old
@@ -43,14 +43,14 @@ const studentSchema = new mongoose.Schema({
   },
   studentId: {
     type: String,
-    required: [true, 'Student ID is required'],
+    required: [false, 'Student ID is required'],
     unique: true,
     uppercase: true,
     trim: true
   },
   interests: {
     type: [String],
-    required: [true, 'At least one interest is required'],
+    required: [false, 'At least one interest is required'],
     enum: {
       values: [
         'Computer Science',
