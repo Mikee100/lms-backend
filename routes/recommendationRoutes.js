@@ -1,12 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const recommendationService = require('../services/recommendationService');
-const authMiddleware = require('../Middleware/authMiddleware');
+const authenticateToken = require('../Middleware/authMiddleware');
 const catchAsync = require('../utils/catchAsync');
 
 // Get personalized course recommendations for a student
 router.get('/courses/:studentId', 
-    authMiddleware.authenticateToken, 
+    authenticateToken, 
     catchAsync(async (req, res) => {
         const { studentId } = req.params;
         const { limit = 10, includeSimilar = true } = req.query;
@@ -61,7 +61,7 @@ router.get('/similar/:courseId',
 
 // Get skill-based recommendations
 router.get('/skills/:studentId', 
-    authMiddleware.authenticateToken, 
+    authenticateToken, 
     catchAsync(async (req, res) => {
         const { studentId } = req.params;
         const { skillLevel = 'intermediate', limit = 5 } = req.query;
@@ -82,7 +82,7 @@ router.get('/skills/:studentId',
 
 // Get collaborative filtering recommendations
 router.get('/collaborative/:studentId', 
-    authMiddleware.authenticateToken, 
+    authenticateToken, 
     catchAsync(async (req, res) => {
         const { studentId } = req.params;
         const { limit = 10 } = req.query;
@@ -102,7 +102,7 @@ router.get('/collaborative/:studentId',
 
 // Update user preferences for better recommendations
 router.post('/preferences/:studentId', 
-    authMiddleware.authenticateToken, 
+    authenticateToken, 
     catchAsync(async (req, res) => {
         const { studentId } = req.params;
         const { interests, skillLevel, learningGoals, preferredCategories } = req.body;
@@ -122,7 +122,7 @@ router.post('/preferences/:studentId',
 
 // Get recommendation insights and explanations
 router.get('/insights/:studentId', 
-    authMiddleware.authenticateToken, 
+    authenticateToken, 
     catchAsync(async (req, res) => {
         const { studentId } = req.params;
         
