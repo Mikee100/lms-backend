@@ -18,11 +18,14 @@ const progressRoutes = require('./routes/progressRoutes');
 const activityRoutes = require('./routes/activityRoutes');
 const studentProfileRoutes = require('./routes/studentProfileRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
+const gamificationRoutes = require('./routes/gamificationRoutes');
+const recommendationRoutes = require('./routes/recommendationRoutes');
 const Assignment = require('./models/Assignment');
 
 const app = express();
 const allowedOrigins = [
   'http://localhost:5173',
+  'http://localhost:5174',
   'https://localhost',
   'https://lms-frontend-sepia-psi.vercel.app', // Add your Vercel frontend
   'http://localhost:5000' // (optional, if you want to allow backend to call itself)
@@ -69,6 +72,12 @@ app.use('/api/courses', coursesRoute);
 app.use('/api/students', studentProfileRoutes);
 
 app.use('/api/payments', paymentRoutes);
+
+// Gamification routes
+app.use('/api/gamification', gamificationRoutes);
+
+// Recommendation routes
+app.use('/api/recommendations', recommendationRoutes);
 
 // Express route (backend)
 

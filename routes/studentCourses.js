@@ -78,6 +78,21 @@ router.post('/:courseId/enroll', authenticateToken, async (req, res) => {
     });
     
     await enrollment.save();
+
+    // Award gamification points for course enrollment
+    try {
+      const GamificationService = require('../services/gamificationService');
+      await GamificationService.awardPoints(
+        req.student._id,
+        'course_enrolled',
+        25, // 25 points for enrolling in a course
+        { courseId: req.params.courseId }
+      );
+    } catch (gamificationError) {
+      console.error('Gamification error in enrollment:', gamificationError);
+      // Continue with response even if gamification fails
+    }
+
     res.json({ message: 'Successfully enrolled in course' });
   } catch (error) {
     console.error(error);
