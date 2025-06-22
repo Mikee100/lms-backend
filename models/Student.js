@@ -65,6 +65,90 @@ const studentSchema = new mongoose.Schema({
       message: 'Invalid interest selected'
     }
   },
+  // Enterprise Features
+  organization: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Organization'
+  },
+  department: {
+    type: String,
+    trim: true
+  },
+  jobTitle: {
+    type: String,
+    trim: true
+  },
+  employeeId: {
+    type: String,
+    trim: true
+  },
+  manager: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Student'
+  },
+  hireDate: {
+    type: Date
+  },
+  // SSO Integration
+  ssoProvider: {
+    type: String,
+    enum: ['saml', 'oauth2', 'ldap', 'azure', 'google', 'none'],
+    default: 'none'
+  },
+  ssoId: {
+    type: String,
+    trim: true
+  },
+  lastSsoLogin: {
+    type: Date
+  },
+  // Learning Path Progress
+  enrolledLearningPaths: [{
+    learningPath: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'LearningPath'
+    },
+    enrolledAt: {
+      type: Date,
+      default: Date.now
+    },
+    completedAt: Date,
+    progress: {
+      type: Number,
+      default: 0,
+      min: 0,
+      max: 100
+    },
+    currentCourse: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Course'
+    }
+  }],
+  // Skills and Competencies
+  skills: [{
+    name: String,
+    level: {
+      type: Number,
+      min: 1,
+      max: 5
+    },
+    verified: {
+      type: Boolean,
+      default: false
+    },
+    verifiedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Tutor'
+    },
+    verifiedAt: Date
+  }],
+  certifications: [{
+    name: String,
+    issuer: String,
+    issuedDate: Date,
+    expiryDate: Date,
+    credentialId: String
+  }],
   active: {
     type: Boolean,
     default: true,

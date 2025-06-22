@@ -21,6 +21,7 @@ const paymentRoutes = require('./routes/paymentRoutes');
 const gamificationRoutes = require('./routes/gamificationRoutes');
 const recommendationRoutes = require('./routes/recommendationRoutes');
 const socialLearningRoutes = require('./routes/socialLearningRoutes');
+const enterpriseRoutes = require('./routes/enterpriseRoutes');
 const Assignment = require('./models/Assignment');
 
 const app = express();
@@ -82,6 +83,9 @@ app.use('/api/recommendations', recommendationRoutes);
 
 // Social Learning routes
 app.use('/api/social', socialLearningRoutes);
+
+// Enterprise routes
+app.use('/api/enterprise', enterpriseRoutes);
 
 // Express route (backend)
 
