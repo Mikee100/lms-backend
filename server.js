@@ -31,7 +31,7 @@ const allowedOrigins = [
   'http://localhost:5174',
   'https://localhost',
   'https://lms-frontend-sepia-psi.vercel.app', // Add your Vercel frontend
-  'http://localhost:5000' // (optional, if you want to allow backend to call itself)
+  
 ];
 
 const corsOptions = {
