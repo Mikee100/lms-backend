@@ -301,9 +301,25 @@ router.get('/material/:filename', authenticateTutor, (req, res) => {
 
 router.get('/my/courses', authenticateTutor, async (req, res) => {
   try {
-    const tutorId = req.tutor.id; 
-    const courses = await Course.find({ tutor: tutorId }); 
-    res.json(courses);
+    const tutorId = req.tutor.id;
+    const courses = await Course.find({ tutor: tutorId }).lean();
+
+    const courseIds = courses.map((course) => course._id);
+    const enrollmentCounts = await Enrollment.aggregate([
+      { $match: { course: { $in: courseIds } } },
+      { $group: { _id: '$course', count: { $sum: 1 } } }
+    ]);
+
+    const enrollmentMap = new Map(
+      enrollmentCounts.map((item) => [String(item._id), item.count])
+    );
+
+    const coursesWithCounts = courses.map((course) => ({
+      ...course,
+      enrolledStudents: enrollmentMap.get(String(course._id)) || 0
+    }));
+
+    res.json(coursesWithCounts);
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error' });

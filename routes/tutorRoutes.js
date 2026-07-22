@@ -19,10 +19,105 @@ router.get("/dashboard", authenticateToken, async (req, res) => {
     
     if (!tutor) return res.status(404).json({ message: "Tutor not found" });
 
-    res.json(tutor);
+    const [activeCourses, totalEnrollments, distinctStudents] = await Promise.all([
+      Course.countDocuments({ tutor: tutor._id }),
+      Enrollment.countDocuments({ tutor: tutor._id }),
+      Enrollment.distinct('student', { tutor: tutor._id })
+    ]);
+
+    const tutorPayload = tutor.toObject();
+    tutorPayload.dashboardStats = {
+      activeCourses,
+      totalEnrollments,
+      totalStudents: distinctStudents.length
+    };
+
+    res.json(tutorPayload);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error" });
+  }
+});
+
+// Authenticated tutor profile
+router.get('/me', authenticateTutor, async (req, res) => {
+  try {
+    const tutor = await Tutor.findById(req.tutor._id).select('-password');
+    if (!tutor) {
+      return res.status(404).json({ message: 'Tutor not found' });
+    }
+
+    res.json(tutor);
+  } catch (err) {
+    console.error('Error fetching tutor profile:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+router.patch('/me', authenticateTutor, async (req, res) => {
+  try {
+    const allowedFields = [
+      'firstName',
+      'lastName',
+      'institution',
+      'experience',
+      'bio',
+      'expertise',
+      'linkedin',
+      'github',
+      'hourlyRate',
+      'teachingMethod',
+      'availability'
+    ];
+
+    const updates = {};
+    for (const key of allowedFields) {
+      if (Object.prototype.hasOwnProperty.call(req.body, key)) {
+        updates[key] = req.body[key];
+      }
+    }
+
+    if (typeof updates.expertise === 'string') {
+      updates.expertise = updates.expertise
+        .split(',')
+        .map((item) => item.trim())
+        .filter(Boolean);
+    }
+
+    if (Array.isArray(updates.expertise)) {
+      updates.expertise = updates.expertise.map((item) => String(item).trim()).filter(Boolean);
+    }
+
+    if (typeof updates.availability === 'string') {
+      updates.availability = updates.availability
+        .split(',')
+        .map((item) => item.trim())
+        .filter(Boolean);
+    }
+
+    updates.updatedAt = Date.now();
+
+    const tutor = await Tutor.findByIdAndUpdate(req.tutor._id, updates, {
+      new: true,
+      runValidators: true
+    }).select('-password');
+
+    if (!tutor) {
+      return res.status(404).json({ message: 'Tutor not found' });
+    }
+
+    res.json({ message: 'Profile updated successfully', tutor });
+  } catch (err) {
+    console.error('Error updating tutor profile:', err);
+    if (err.name === 'ValidationError') {
+      const details = Object.values(err.errors || {}).map((item) => item.message);
+      return res.status(400).json({
+        message: details[0] || 'Validation failed',
+        details
+      });
+    }
+
+    res.status(500).json({ message: 'Server error' });
   }
 });
 
@@ -195,10 +290,13 @@ router.patch('/:id/status', async (req, res) => {
 router.get('/all/students', authenticateTutor, async (req, res) => {
   try {
     // Find all enrollments for this tutor
-    const enrollments = await Enrollment.find({ tutor: req.tutor.id, paymentStatus: 'paid' })
+    const enrollments = await Enrollment.find({
+      tutor: req.tutor.id,
+      paymentStatus: { $ne: 'failed' }
+    })
       .populate({
         path: 'student',
-        select: 'firstName lastName email interests studentId enrolledCourses'
+        select: 'firstName lastName email interests studentId dateOfBirth department jobTitle employeeId bio avatar socialLinks contact createdAt'
       })
       .populate({
         path: 'course',
@@ -222,7 +320,9 @@ router.get('/all/students', authenticateTutor, async (req, res) => {
             title: enrollment.course.title,
             price: enrollment.course.price,
             amountPaid: enrollment.amountPaid,
-            paymentDate: enrollment.paymentDate
+            paymentDate: enrollment.paymentDate,
+            paymentStatus: enrollment.paymentStatus,
+            enrolledAt: enrollment.enrolledAt
           });
         }
       }

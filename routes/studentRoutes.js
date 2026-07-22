@@ -45,7 +45,7 @@ router.get('/courses/:id', authenticateToken, async (req, res) => {
     }
 
     const course = await Course.findById(courseId)
-      .populate('tutor', 'name email') // Only if tutor is a referenced user
+      .populate('tutor', 'firstName lastName email bio expertise institution experience profilePhoto')
       .lean();
 
     if (!course) {
